@@ -3,26 +3,26 @@ from wtforms import StringField
 from wtforms.validators import DataRequired, Regexp, AnyOf
 # from apps.users.models import PasswordField
 
-MOBILE_REGEX = "^[1][3-9][0-9]{9}$"
+EMAIL_REGEX = "^[a-zA-Z0-9_-]+@[a-zA-Z0-9_-]+(\.[a-zA-Z0-9_-]+)+$"
 
 
-class SmsCodeForm(Form):
-    mobile = StringField("手机号码", validators=[
-        DataRequired(message="请输入手机号码"), Regexp(MOBILE_REGEX, message="请输入合法的手机号")
+class EmailCodeForm(Form):
+    email = StringField("手机号码", validators=[
+        DataRequired(message="请输入邮箱号码"), Regexp(EMAIL_REGEX, message="请输入合法的邮箱")
     ])
 
 
 class LoginForm(Form):
-    mobile = StringField("手机号码", validators=[
-        DataRequired(message="请输入手机号码"), Regexp(MOBILE_REGEX, message="请输入合法的手机号")
+    email = StringField("邮箱", validators=[
+        DataRequired(message="请输入邮箱"), Regexp(EMAIL_REGEX, message="请输入合法的邮箱")
     ])
     # 密码的长度为8 - 18
     password = StringField("密码", validators=[DataRequired(message="请输入密码")])
 
 
 class RegisterForm(Form):
-    mobile = StringField("手机号码", validators=[
-        DataRequired(message="请输入手机号码"), Regexp(MOBILE_REGEX, message="请输入合法的手机号")
+    email = StringField("邮箱", validators=[
+        DataRequired(message="请输入邮箱号码"), Regexp(EMAIL_REGEX, message="请输入合法的邮箱")
     ])
     # 验证码长度为4
     code = StringField("验证码", validators=[DataRequired(message="请输入验证码")])

@@ -2,6 +2,7 @@ from peewee import *
 from webDB.models import BaseModel
 from bcrypt import hashpw, gensalt
 
+__all__ = ['User']
 
 class PasswordHash(bytes):
     def check_password(self, password):
@@ -41,7 +42,7 @@ GENDERS = (
 
 
 class User(BaseModel):
-    mobile = CharField(max_length=11, verbose_name='手机号码', index=True, unique=True)
+    email = CharField(max_length=60, verbose_name='邮箱', index=True, unique=True)
     # 密码的加密和比对？
     # 1. 密文
     # 2. 不可反解

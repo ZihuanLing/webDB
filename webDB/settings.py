@@ -9,6 +9,7 @@ settings = {
     'template_path': 'templates',                   # 模板路径 - 使用相对路径
     'secret_key': 'PG9M72exnaisrSVR',
     'jwt_expire': 24*3600,                          # jwt过期时间为一天
+    'code_expire': 10*60,                              # 验证码过期时间为10分钟
     'MEDIA_ROOT': os.path.join(BASE_DIR, 'media'),
     'SITE_URL': 'http://127.0.0.1:8888',
     'db': {

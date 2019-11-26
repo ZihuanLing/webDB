@@ -2,7 +2,7 @@ from peewee import *
 from webDB.models import BaseModel
 from bcrypt import hashpw, gensalt
 
-__all__ = ['User']
+__all__ = ['User', 'PasswordField']
 
 class PasswordHash(bytes):
     def check_password(self, password):

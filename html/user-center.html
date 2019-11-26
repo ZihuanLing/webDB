@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>用户中心</title>
+    <meta name="viewport" charset="UTF-8" content="user-scalable=no"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0">
+    <meta property="qc:admins" content="1403267155765154541656375" />
+    <meta property="wb:webmaster" content="fdcd9430a88b1552" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta http-equiv="Access-Control-Allow-Origin" content="*">
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@3.3.7/dist/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <script type="text/javascript" src="../js/vue.js"></script>
+    <script type="text/javascript" src="../js/vue-cookies.js"></script>
+    <script type="text/javascript" src="../js/axios.js"></script>
+</head>
+<body>
+<div class="content" id="content">
+    <div class="title"><em></em>注册账号</div>
+    <form class="loginform" >
+        <input type="hidden" id="mount_reg"  value ="" />
+        <div id="phoneReg"  style='display: block;'>
+            <dl>
+                <dt><span>*</span>数据库类型:</dt>
+                <dd>
+                    <input class="inp" type="text" v-model="db_type" placeholder="请输入数据库类型" />
+                </dd>
+            </dl>
+            <dl>
+                <dt><span>*</span>主机地址:</dt>
+                <dd>
+                    <input class="inp" type="text" v-model="host" @blur="checkHost" placeholder="请输入主机地址" />
+                    <span class="marphone" v-if="invalidate_host">请输入合法的ip地址</span>
+                </dd>
+            </dl>
+                <dt><span>*</span>端口号:</dt>
+                <dd>
+                    <input class="inp" type="text" v-model="port" placeholder="请输入端口号" />
+                </dd>
+            </dl>
+                <dt><span>*</span>用户名:</dt>
+                <dd>
+                    <input class="inp" type="text" v-model="user" @blur="checkHost" placeholder="请输入用户名" />
+                    <span class="marphone" v-if="invalidate_user">请输入用户名</span>
+                </dd>
+            </dl>
+                <dt><span>*</span>密码:</dt>
+                <dd>
+                    <input class="inp" type="password" v-model="password" placeholder="请输入密码" />
+                </dd>
+            </dl>
+                <dt><span>*</span>数据库名:</dt>
+                <dd>
+                    <input class="inp" type="text" v-model="database" placeholder="请输入数据库名" />
+                </dd>
+            </dl>
+                <dt><span>*</span>备注:</dt>
+                <dd>
+                    <textarea cols="30" rows="10" v-model="note" placeholder="请输入备注信息"></textarea>
+                </dd>
+            </dl>
+            <dl>
+                <dd>
+                    <input id="register" type="button" @click="submit" value="立即注册">
+                </dd>
+            </dl>
+            </div>
+       </form>
+</div>
+
+<script>
+    axios.defaults.baseURL = 'http://127.0.0.1:8888/';
+    vm = new Vue({
+        el:"#content",
+        data:{
+            host:'',
+            port: 3306,
+            user:'',
+            password:'',
+            database: '',
+            note: '',
+            db_type: 'MYSQL',
+            db_types: ['MYSQL'],
+            invalidate_host: false,
+            invalidate_user: false,
+        },
+        methods: {
+            checkHost: function () {
+                if (this.host.length == 0){
+                    this.invalidate_host = true;
+                }else this.invalidate_host = false;
+            },
+            submit: function () {
+                console.log('trying to submit')
+                let data = {
+                    host: this.host,
+                    port: this.port,
+                    user: this.user,
+                    password: this.password,
+                    database: this.database,
+                    note: this.note,
+                    db_type: this.db_type,
+                };
+                let tsessionid = this.$cookies.get('tsessionid');
+                if (tsessionid){
+                    axios.post('/DBRecord/',data, {
+                        headers: {tsessionid: tsessionid}
+                    }).then((res)=>{
+                        console.log(res.data);
+                    }).catch(function (err) {
+                        console.log(err);
+                        console.log(err.response);
+                    })
+                }
+                else{
+                    location.href = "../login.html"
+                }
+            }
+        }
+    })
+</script>
+</body>
+</html>

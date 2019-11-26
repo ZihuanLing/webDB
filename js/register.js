@@ -13,30 +13,22 @@ new Vue({
         countDown:'',
         getCodes:true,
         datacode:'',
-        datamobile:''
     },
     methods: {
         //提交表单
         submit: function () {
 
             const that =this;
-            data = {
-                    'mobile':that.email,
-                    'code':that.code,
-                    'password':that.password
-            }
-            console.log(data);
-            return;
             if (this.password.length >= 6 && this.password.length <= 16 && this.code.length === 4) {
                   axios.post('/register/',{
-                    'mobile':that.mobile,
+                    'email':that.email,
                     'code':that.code,
                     'password':that.password
                 }).then((res)=>{
                     alert('注册成功，点击确定去登录');
                       location.href = './login.html';
                 }).catch((err)=>{
-                      if(err.response.status === 400){
+                      if(err.response.status === 403 || err.response.status === 400){
                           if(err.response.data.code){
                               that.datacode = err.response.data.code
                           }else if(err.response.data.email){
@@ -50,7 +42,7 @@ new Vue({
             }
 
         },
-        //验证手机号
+        //验证邮箱
         changeMobile: function () {
             const that = this;
             let reg = /^[a-zA-Z0-9_-]+@[a-zA-Z0-9_-]+(\.[a-zA-Z0-9_-]+)+$/;
@@ -89,15 +81,13 @@ new Vue({
                 }).then((res) => {
                     console.log(res)
                 }).catch((err) => {
-                    console.log(err)
+                    if (err.response.data.email) {
+                        that.errEmail = err.response.data.email;
+                    }
                 })
-
-
             }
         }
     }
-
-
 });
 
 

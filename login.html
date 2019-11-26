@@ -79,7 +79,7 @@
     }
 
     a:link, a:visited, a:hover, a:active {
-        margin-left: 100px;
+        /*margin-left: 100px;*/
         color: #0366D6;
     }
 
@@ -94,9 +94,8 @@
 <div class="header">
     <div class="loginhead">
         <div class="wrap">
-            <div class="fr" style="margin-top: 10px;font-size: 14px;color:#fff;">没有账号？<a href="register.html" style="color: #fff;margin-left: 15px;padding-left: 15px;border-left: solid 1px #a0a0a0;">注册</a>
-            </div>
             <div class="logo"><a href="./html/group/group.html" ><img style="margin: 4px 0px;" src="./images/logo.png" width="150"/></a></div>
+            <div class="fr" style="margin-top: 25px;font-size: 14px;color:#fff;">没有账号？<a href="register.html" style="color: #fff;margin-left: 15px;padding-left: 15px;border-left: solid 1px #a0a0a0;">注册</a></div>
         </div>
     </div>
 </div>
@@ -108,7 +107,7 @@
             <div class="loginleft">
                 <div id="ad_2" class="flashNews" style="width:560px;">
                     <div>
-                        <p><a target="_blank" href=""><img width="560" src="./images/login.png"/></a></p>
+                        <p><a target="_blank" href=""><img width="560" src="./images/login.jpg"/></a></p>
                     </div>
                 </div>
             </div>
@@ -117,8 +116,8 @@
                 <validator name="myForm">
                     <form id="ajax_login_form" method="POST">
                         <div class="item">
-                            <input id="account_input" name="login_email" type="text" v-model="mobile" class="inp"
-                                   autocomplete="off" @blur="changeMobile" placeholder="请输入手机"/>
+                            <input id="account_input" name="login_email" type="text" v-model="email" class="inp"
+                                   autocomplete="off" @blur="changeMobile" placeholder="请输入邮箱"/>
                             <span class="maraccount" v-if="account != ''">{{account}}</span>
                             <span class="maraccount" v-if="datamobile">{{datamobile}}</span>
                         </div>

@@ -5,11 +5,11 @@ axios.defaults.baseURL = 'http://127.0.0.1';
 var vm = new Vue({
     el:'#content',
     data:{
-        mobile:'',
+        email:'',
         password:'',
         account:false,
         datapsw:'',
-        datamobile:''
+        dataemail:''
     },
     created(){
         let tsessionid = this.$cookies.get("tsessionid");
@@ -23,7 +23,7 @@ var vm = new Vue({
                 console.log(response)
                 re_data = response.data;
                 if (re_data.verify_status == 'OK'){
-                    location.href = re_data.redirect;
+                    // location.href = re_data.redirect;
                 }
             })
         }
@@ -32,12 +32,12 @@ var vm = new Vue({
         login: function() {
             // this.getcookie();
             let that = this;
-            let reg = /^[1][3,4,5,7,8][0-9]{9}$/;
-            if(!reg.test(that.mobile) || this.password.length < 6 || this.password.length>20){
+            let reg = /^[a-zA-Z0-9_-]+@[a-zA-Z0-9_-]+(\.[a-zA-Z0-9_-]+)+$/;
+            if(!reg.test(that.email) || this.password.length < 6 || this.password.length>20){
                 alert('请填写正确的信息！')
             }else{
                 axios.post('/login/',{
-                    'mobile':that.mobile,
+                    'email':that.email,
                     'password':that.password
                 }).then((res)=>{
 
@@ -45,31 +45,29 @@ var vm = new Vue({
                     this.$cookies.set('tsessionid',res.data.token);
                     this.$cookies.set('nick_name',res.data.nick_name);
                     this.$cookies.set('user_id',res.data.id);
-                    location.href = '/html/group/group.html'
-
+                    // location.href = '/html/group/group.html'
+                    console.log("Login ok")
                 }).catch(function (err) {
                     console.log(err);
                     if(err.response.status === 400){
                         if(err.response.data.non_fields){
                             that.datapsw = err.response.data.non_fields;
-                            that.datamobile = ''
-                        }else if(err.response.data.mobile){
+                            that.dataemail = ''
+                        }else if(err.response.data.email){
                             that.datapsw = '';
-                            that.datamobile = err.response.data.mobile
+                            that.dataemail = err.response.data.email
                         }
                     }
                 })
             }
         },
-        changeMobile:function(){
+        changeemail:function(){
             let that = this;
-            let reg = /^[1][3,4,5,7,8][0-9]{9}$/;
-            if(!reg.test(that.mobile)){
-                this.account = '请输入正确的手机号!';
-
+            let reg = /^[a-zA-Z0-9_-]+@[a-zA-Z0-9_-]+(\.[a-zA-Z0-9_-]+)+$/;
+            if(!reg.test(that.email)){
+                this.account = '请输入正确的邮箱!';
             }else{
                 that.account = '';
-
             }
         },
         setCookie:function (userId) {

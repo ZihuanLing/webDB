@@ -2,7 +2,7 @@
 //  * Created by Think on 2018/7/7.
 //  */
 
-axios.defaults.baseURL = 'http://127.0.0.1/';
+axios.defaults.baseURL = 'http://127.0.0.1:8888/';
 new Vue({
     el:"#content",
     data:{

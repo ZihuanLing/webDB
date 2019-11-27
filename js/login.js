@@ -1,7 +1,7 @@
 /**
  * Created by Think on 2018/7/6.
  */
-axios.defaults.baseURL = 'http://127.0.0.1';
+axios.defaults.baseURL = 'http://127.0.0.1:8888/';
 var vm = new Vue({
     el:'#content',
     data:{
@@ -45,7 +45,7 @@ var vm = new Vue({
                     this.$cookies.set('tsessionid',res.data.token);
                     this.$cookies.set('nick_name',res.data.nick_name);
                     this.$cookies.set('user_id',res.data.id);
-                    // location.href = '/html/group/group.html'
+                    location.href = '/html/user-center.html';
                     console.log("Login ok")
                 }).catch(function (err) {
                     console.log(err);

@@ -39,5 +39,23 @@ def create_db_record():
         print(resp.text)
 
 
+def get_db_record():
+    resp = requests.get(f"{website_url}/DBRecord", headers=headers)
+    print(resp.status_code)
+    try:
+        print(json.loads(resp.text))
+    except json.decoder.JSONDecodeError as e:
+        print(resp.text)
+
+def del_record(record_id):
+    resp = requests.get(f"{website_url}/DelRecord/{record_id}", headers=headers)
+    print(resp.status_code)
+    try:
+        print(json.loads(resp.text))
+    except json.decoder.JSONDecodeError as e:
+        print(resp.text)
+
 if __name__ == '__main__':
-    create_db_record()
+    # create_db_record()
+    # get_db_record()
+    del_record(2)

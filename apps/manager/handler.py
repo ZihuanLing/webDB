@@ -3,7 +3,7 @@ import json
 from peewee_async import MySQLDatabase
 import peewee
 
-from apps.users.forms import *
+from apps.utils.util_func import json_serial2
 from webDB.handlers import RedisHandler
 from webDB.settings import settings
 from apps.manager.models import UserDB
@@ -11,12 +11,35 @@ from apps.utils.webDB_decorators import authenticated_async
 from apps.manager.forms import DBRecordForm
 
 
-class CreateDBRecordHandler(RedisHandler):
-    """
-    创建一条数据库记录
-    """
+class DBRecordHandler(RedisHandler):
+    @authenticated_async
+    async def get(self, *args, **kwargs):
+        # 获取用户的数据库记录
+        re_data = []
+        records_query = UserDB.filter(UserDB.owner==self.current_user)
+        records = await self.application.objects.execute(records_query)
+        for record in records:
+            item = {
+                'id': record.id,
+                'owner_id': record.owner_id,
+                'host': record.host,
+                'port': record.port,
+                'user': record.user,
+                'db_type': record.db_type,
+                'database': record.database,
+                'note': record.note,
+                'add_time': record.add_time,
+                'last_login_time': record.last_login_time,
+            }
+            # print(record.host)
+            re_data.append(item)
+        self.finish(json.dumps(re_data, default=json_serial2))
+
     @authenticated_async
     async def post(self, *args, **kwargs):
+        """
+        创建一条数据库记录
+        """
         re_data = {}
         param = json.loads(self.request.body.decode('utf8'))
         form = DBRecordForm.from_json(param)
@@ -55,3 +78,18 @@ class CreateDBRecordHandler(RedisHandler):
 
         self.finish(re_data)
 
+
+class DelRecordHandler(RedisHandler):
+    @authenticated_async
+    async def get(self, record_id, *args, **kwargs):
+        # 删除数据库连接记录表
+        re_data = {}
+        try:
+            record = await self.application.objects.get(UserDB, id=record_id, owner_id=self.current_user.id)
+            await self.application.objects.delete(record)
+            re_data['msg'] = 'OK'
+        except UserDB.DoesNotExist as e:
+            # 记录不存在
+            self.set_status(404)
+            re_data['error'] = "您所请求的数据不存在"
+        self.finish(re_data)

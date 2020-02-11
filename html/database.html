@@ -13,6 +13,12 @@
     <!-- App favicon -->
     <link rel="shortcut icon" href="/images/favicon.ico">
 
+    <!-- DataTables -->
+    <link href="/plugins/datatables/dataTables.bootstrap4.min.css" rel="stylesheet" type="text/css" />
+    <link href="/plugins/datatables/buttons.bootstrap4.min.css" rel="stylesheet" type="text/css" />
+    <!-- Responsive datatable examples -->
+    <link href="/plugins/datatables/responsive.bootstrap4.min.css" rel="stylesheet" type="text/css" />
+
     <!-- Sweet Alert css -->
     <link href="../plugins/sweet-alert/sweetalert2.min.css" rel="stylesheet" type="text/css"/>
 
@@ -74,10 +80,20 @@
                     </li>
 
                     <li>
-                        <a href="/html/user-center.html" data-toggle="tab" aria-expanded="true" class="nav-link active">
-                            <i class="fi-layers"></i> <span> 个人中心 </span> <span class="menu-arrow"></span>
+                        <a href="/html/user-center.html">
+                            <i class="fi-layers"></i> <span> 个人中心 </span>
                         </a>
                     </li>
+
+                    <li class="active">
+                        <a href="javascript: void(0);" class="active" aria-expanded="true">
+                            <i class="mdi mdi-database"></i><span> {{database}} </span> <span class="menu-arrow"></span>
+                        </a>
+                        <ul class="nav-second-level" aria-expanded="false">
+                            <li v-for="tb in tables" ><a @click="fetch_data(tb)">{{tb}}</a></li>
+                        </ul>
+                    </li>
+
                 </ul>
 
             </div>
@@ -315,31 +331,39 @@
         </div>
         <!-- Top Bar End -->
 
-
         <!-- Start Page content -->
         <div class="content">
             <div class="container-fluid">
                 <div class="row">
-                    <div class="col-md-6 col-lg-3" v-for="record in recordDatas">
-
-                        <div class="card m-b-30">
-                            <div class="card-body">
-                                <h5 class="card-title">{{record.database}}</h5>
-                                <p class="card-text">创建日期：{{record.add_time}}</p>
-                                <p class="card-text" v-if="record.note">备注：{{record.note}}</p>
-                            </div>
-                            <ul class="list-group list-group-flush">
-                                <li class="list-group-item">主机地址：{{record.host}}:{{record.port}}</li>
-                                <li class="list-group-item">类型：{{record.db_type}}</li>
-                            </ul>
-                            <div class="card-body">
-                                <a href="#" class="card-link text-custom" @click="connectDB(record.id, record.database)">连接</a>
-                                <button class="card-link text-custom" @click="showConfirm(record.id)">删除</button>
-                            </div>
-                        </div>
-
-                    </div>
+                    <form>
+                        <textarea v-model="command" name="command" cols="50" rows="5"></textarea>
+                        <input type="button" @click="run_command(this)" value="RUN"/>
+                    </form>
                 </div>
+
+                <!-- 用表格的形式展示数据 -->
+                <div class="row">
+                    <div class="col-12">
+                        <div class="card-box table-responsive">
+                            <h4 class="m-t-0">{{database}}.{{table}}</h4>
+
+                            <table id="responsive-datatable" class="table table-bordered dt-responsive nowrap" cellspacing="0" width="100%">
+                                <thead>
+                                <tr>
+                                    <th v-for="column in columns">{{column}}</th>
+                                </tr>
+                                </thead>
+
+                                <tbody>
+                                <tr v-for="row in data">
+                                    <td v-for="col in row">{{col}}</td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div> <!-- end row -->
+
             </div>
         </div>
     </div>
@@ -351,6 +375,7 @@
     <!-- END wrapper -->
 </div>
 
+<!-- 提示框 -->
 <div class="swal2-container swal2-fade swal2-shown" style="overflow-y: auto;" id="sweet-alert-container" hidden="true">
     <div role="dialog" aria-labelledby="swal2-title" aria-describedby="swal2-content" class="swal2-modal swal2-show" tabindex="-1" style="width: 500px; padding: 20px; background: rgb(255, 255, 255); display: block; min-height: 312px;">
         <div class="swal2-icon swal2-error" style="display: none;"><span class="swal2-x-mark"><span class="swal2-x-mark-line-left"></span><span class="swal2-x-mark-line-right"></span></span></div>
@@ -375,6 +400,7 @@
 
     </div>
 </div>
+<!-- 提示框 -->
 
 <!-- jQuery  -->
 <script src="/assets/js/jquery.min.js"></script>
@@ -383,76 +409,113 @@
 <script src="/assets/js/metisMenu.min.js"></script>
 <script src="/assets/js/waves.js"></script>
 <script src="/assets/js/jquery.slimscroll.js"></script>
+<!-- Required datatable js -->
+<script src="/plugins/datatables/jquery.dataTables.min.js"></script>
+<script src="/plugins/datatables/dataTables.bootstrap4.min.js"></script>
+<!-- Responsive examples -->
+<script src="/plugins/datatables/dataTables.responsive.min.js"></script>
+<script src="/plugins/datatables/responsive.bootstrap4.min.js"></script>
 
 <!-- App js -->
 <script src="/assets/js/jquery.core.js"></script>
 <script src="/assets/js/jquery.app.js"></script>
 
 <script>
+    // $(document).ready(function () {
+    //     $('#responsive-datatable').DataTable();
+    // });
     axios.defaults.baseURL = 'http://127.0.0.1:8888/';
     vm = new Vue({
         el: "#wrapper",
         data: {
+            command: "",
             nick_name: 'Nobody',
-            recordDatas: [],
-            del_id: null
+            record_id: -1,
+            columns: [],
+            column_detail: [],
+            data: [],
+            table: '',
+            database: '',
+            tables: []
         },
         created() {
-            this.fetchRecord()
+            let url = window.location.href;
+            let params = url.split("?")[1].slice(2)
+            params = JSON.parse(window.atob(params));
+            this.record_id = params.record_id;
+            this.database = params.database;
+            // console.log(params);
+            let that = this;
+            // 获取当前所有数据库的tables；
+            this.execute_sql("show tables;", res => {
+                res.forEach(tb => that.tables.push(tb[0]));
+                // 设置第一个table为默认
+                if (that.tables) {
+                    that.table = that.tables[0];
+                    // that.table = 'db';
+                    that.fetch_columns();
+                    that.fetch_data();
+                }
+            });
         },
         methods: {
-            delRecord: function (record_id=this.del_id) {
-                if(this.del_id){
-                    console.log("deleting : ", record_id)
-                    let tsessionid = this.$cookies.get('tsessionid');
-                    axios.get("/DelRecord/" + record_id, {
-                        headers: {
-                            tsessionid: tsessionid
-                        }
-                    }).then(res => {
-                        console.log(res.data);
-                        if (res.status == 200){
-                            this.hideConfirm();
-                            alert("删除成功")
-                        }else{
-                            alert("删除出错")
-                        }
-                        this.fetchRecord();
-                    }).catch(err => {
-                        console.log(err);
-                    })
-                }
-
-            },
-            fetchRecord: function () {
-                let tsessionid = this.$cookies.get('tsessionid');
-                if (tsessionid) {
-                    axios.get("/DBRecord/", {
-                        headers: {
-                            tsessionid: tsessionid
-                        }
-                    }).then(res => {
-                        this.recordDatas = res.data;
-                    }).catch(err => {
-                        console.log(err);
-                    })
-                } else {
-                    console.log("没有tsessionid")
-                }
-            },
             showConfirm: function (record_id) {
                 $("#sweet-alert-container")[0].hidden=false;
-                this.del_id = record_id;
             },
             hideConfirm: function () {
                 $("#sweet-alert-container")[0].hidden=true;
-                this.del_id = null;
             },
-            connectDB: function (record_id, database) {
-                // console.log("record id is : ", record_id);
-                params = {record_id: record_id, database: database};
-                params = window.btoa(JSON.stringify(params));
-                window.location.href = "/html/database.html?_="+params;
+            execute_sql: function (sql, callback){
+                let tsessionid = this.$cookies.get('tsessionid');
+                let data = {
+                    record_id: this.record_id,
+                    command: sql,
+                };
+                axios.post('/OperateDB/',data, {
+                        headers: {tsessionid: tsessionid}
+                    }).then((res)=>{
+                        // console.log(res.data.result);
+                        if (callback) callback(res.data.result)
+                    }).catch(function (err) {
+                        console.log(err);
+                        let err_msg = err.response.data['err_msg'];
+                        if (err_msg) alert(err_msg);
+                    })
+            },
+            run_command: function (obj) {
+                console.log(obj);
+                console.log(obj.$event);
+                if (!this.command) return;
+                this.execute_sql(this.command, result => {
+                    console.log("result");
+                    console.log(result);
+                });
+            },
+            fetch_columns: function (table) {
+                // 获取当前table的所有columns
+                let that = this;
+                that.columns = [];
+                if (table) {
+                    that.table = table;
+                }
+                this.execute_sql("show columns from " + this.table, (res => {
+                    that.column_detail = res;
+                    res.forEach(col => { that.columns.push(col[0]) });
+                }))
+            },
+            fetch_data: function (table) {
+                // 获取当前database.table的所有数据
+                let that = this;
+                if (table){
+                    that.table = table;
+                    that.fetch_columns();
+                }
+                // let command = "select * from " + that.database+'.'+that.table;
+                let command = "select * from " + that.table;
+                that.execute_sql(command, res => {
+                    that.data = res;
+                    // $('#responsive-datatable').DataTable();
+                })
             }
         }
     });

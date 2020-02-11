@@ -45,7 +45,7 @@ new Vue({
         //验证邮箱
         changeMobile: function () {
             const that = this;
-            let reg = /^[a-zA-Z0-9_-]+@[a-zA-Z0-9_-]+(\.[a-zA-Z0-9_-]+)+$/;
+            let reg = /^[\.a-zA-Z0-9_-]+@[a-zA-Z0-9_-]+(\.[a-zA-Z0-9_-]+)+$/;
             let res = reg.test(that.email);
             if (!res) {
                 this.errEmail = '请输入正确的邮箱'
@@ -57,7 +57,7 @@ new Vue({
         //获取验证码+执行倒计时
         getCode: function () {
             const that = this;
-            let reg = /^[a-zA-Z0-9_-]+@[a-zA-Z0-9_-]+(\.[a-zA-Z0-9_-]+)+$/;
+            let reg = /^[\.a-zA-Z0-9_-]+@[a-zA-Z0-9_-]+(\.[a-zA-Z0-9_-]+)+$/;
             let res = reg.test(that.email);
             if (!res) {
                 this.errEmail = '请输入正确的邮箱'

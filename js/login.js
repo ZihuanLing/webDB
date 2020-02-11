@@ -32,7 +32,7 @@ var vm = new Vue({
         login: function() {
             // this.getcookie();
             let that = this;
-            let reg = /^[a-zA-Z0-9_-]+@[a-zA-Z0-9_-]+(\.[a-zA-Z0-9_-]+)+$/;
+            let reg = /^[\.a-zA-Z0-9_-]+@[a-zA-Z0-9_-]+(\.[a-zA-Z0-9_-]+)+$/;
             if(!reg.test(that.email) || this.password.length < 6 || this.password.length>20){
                 alert('请填写正确的信息！')
             }else{
@@ -63,7 +63,7 @@ var vm = new Vue({
         },
         changeemail:function(){
             let that = this;
-            let reg = /^[a-zA-Z0-9_-]+@[a-zA-Z0-9_-]+(\.[a-zA-Z0-9_-]+)+$/;
+            let reg = /^[\.a-zA-Z0-9_-]+@[a-zA-Z0-9_-]+(\.[a-zA-Z0-9_-]+)+$/;
             if(!reg.test(that.email)){
                 this.account = '请输入正确的邮箱!';
             }else{

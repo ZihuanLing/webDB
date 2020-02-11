@@ -12,4 +12,6 @@ def json_serial(obj):
 def json_serial2(obj):
     if isinstance(obj, (datetime, date)):
         return obj.strftime("%Y-%m-%d %H:%M:%S")
+    if isinstance(obj, bytes):
+        return obj.decode('utf8')
     raise TypeError("Type {} is not serializable.".format(type(obj)))

@@ -13,6 +13,7 @@ from webDB.settings import settings
 from apps.users.models import User
 from apps.utils.webDB_decorators import authenticated_async
 from apps.utils.email_sender import send_email
+from apps.utils.crypto import AES_params
 
 
 def generate_code():
@@ -129,7 +130,10 @@ class RegisterHandler(RedisHandler, ABC):
                     re_data['email'] = '该邮箱已被注册！'
                 except User.DoesNotExist as e:
                     # 到此说明用户不存在，创建新用户
-                    user = await self.application.objects.create(User, email=email, password=password)
+                    params = AES_params()
+                    secret_params = json.dumps(params)
+                    user = await self.application.objects.create(User, email=email, password=password,
+                                                                 secret_params=secret_params)
                     re_data['id'] = user.id
         else:
             self.set_status(400)

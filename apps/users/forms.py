@@ -3,7 +3,7 @@ from wtforms import StringField
 from wtforms.validators import DataRequired, Regexp, AnyOf
 # from apps.users.models import PasswordField
 
-EMAIL_REGEX = "^[a-zA-Z0-9_-]+@[a-zA-Z0-9_-]+(\.[a-zA-Z0-9_-]+)+$"
+EMAIL_REGEX = "^[\.a-zA-Z0-9_-]+@[a-zA-Z0-9_-]+(\.[a-zA-Z0-9_-]+)+$"
 
 
 class EmailCodeForm(Form):

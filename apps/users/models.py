@@ -4,6 +4,7 @@ from bcrypt import hashpw, gensalt
 
 __all__ = ['User', 'PasswordField']
 
+
 class PasswordHash(bytes):
     def check_password(self, password):
         password = password.encode('utf-8')
@@ -52,3 +53,4 @@ class User(BaseModel):
     address = CharField(max_length=200, verbose_name='地址', null=True)
     desc = TextField(verbose_name='个人简介', null=True)
     gender = CharField(max_length=22, verbose_name='性别', null=True, choices=GENDERS)
+    secret_params = CharField(max_length=100, verbose_name='数据库秘钥', null=False)

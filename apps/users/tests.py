@@ -37,16 +37,16 @@ from apps.users.models import User
 #     # print(json.loads(resp.text))
 
 
-# def test_register():
-#     url = "{}/register/".format(web_url)
-#     data = {
-#         "mobile": '13725761132',
-#         'password': '123456789',
-#         'code': '5491'
-#     }
-#     res = requests.post(url, json=data)
-#     print(res.content.decode('utf8'))
-#     return res
+def te_register():
+    url = "{}/register/".format(website_url)
+    data = {
+        "email": '16zhling@stu.edu.cn',
+        'password': 'lingzihuan',
+        'code': '1234'
+    }
+    res = requests.post(url, json=data)
+    print(res.content.decode('utf8'))
+    return res
 
 def modify_profile():
     # 修改个人信息
@@ -89,10 +89,11 @@ def modify_password():
 
 
 if __name__ == '__main__':
-    # pass
+    pass
     # redis_conn = redis.StrictRedis(**settings['redis'])
     # r = redis_conn.set("13725761132_5091", 1, 600)
     # print(r)
     # modify_profile()
     # get_profile()
-    modify_password()
+    # modify_password()
+    # te_register()

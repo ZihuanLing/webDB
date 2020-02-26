@@ -28,6 +28,9 @@
     <link href="/assets/css/metismenu.min.css" rel="stylesheet" type="text/css"/>
     <link href="/assets/css/style.css" rel="stylesheet" type="text/css"/>
 
+    <!-- 自定义CSS -->
+    <link href="/css/database.css" rel="stylesheet" type="text/css"/>
+
     <script src="/assets/js/modernizr.min.js"></script>
 
 
@@ -50,9 +53,9 @@
             <!-- LOGO -->
             <div class="topbar-left">
                 <a href="#" class="logo">
-                            <span>
-                                <img src="/images/logo.png" alt="" width="80%">
-                            </span>
+                    <span>
+                        <img src="/images/logo.png" alt="" width="80%">
+                    </span>
                 </a>
             </div>
 
@@ -66,12 +69,10 @@
                 <p class="text-muted">This is no body.</p>
             </div>
 
-            <!--- Sidemenu -->
+            <!--- Side menu -->
             <div id="sidebar-menu">
 
                 <ul class="metismenu" id="side-menu">
-
-                    <!--<li class="menu-title">Navigation</li>-->
 
                     <li>
                         <a href="/html/user-create.html">
@@ -89,7 +90,7 @@
                         <a href="javascript: void(0);" class="active" aria-expanded="true">
                             <i class="mdi mdi-database"></i><span> {{database}} </span> <span class="menu-arrow"></span>
                         </a>
-                        <ul class="nav-second-level" aria-expanded="false">
+                        <ul class="nav-second-level" aria-expanded="false" style="max-height: 300px; overflow-y: auto;">
                             <li v-for="tb in tables" ><a @click="fetch_data(tb)">{{tb}}</a></li>
                         </ul>
                     </li>
@@ -334,11 +335,36 @@
         <!-- Start Page content -->
         <div class="content">
             <div class="container-fluid">
-                <div class="row">
-                    <form>
-                        <textarea v-model="command" name="command" cols="50" rows="5"></textarea>
-                        <input type="button" @click="run_command(this)" value="RUN"/>
-                    </form>
+                <!-- 命令输入运行栏 -->
+                <div id="command-input" hidden class="row m-0 p-2" style="background: #FFFFFF;">
+                    <div class="col-8">
+                        <form class="row">
+                            <textarea v-model="command" name="command" cols="50" rows="5" class="col-6"></textarea>
+                            <input type="button" @click="run_command" value="RUN" class="col-1"/>
+                        </form>
+                        <!-- SQL快捷操作 -->
+                        <div class="row mt-3">
+                            <span class="mr-2 btn btn-light waves-effect" @click="append_command('SELECT * FROM ' + table)">SELECT *</span>
+                            <span class="mr-2 btn btn-light waves-effect" @click="append_command('SELECT')">SELECT</span>
+                            <span class="mr-2 btn btn-light waves-effect" @click="append_command('INSERT')">INSERT</span>
+                            <span class="mr-2 btn btn-light waves-effect" @click="append_command('DELETE')">DELETE</span>
+                            <span class="mr-2 btn btn-light waves-effect" @click="append_command('UPDATE')">UPDATE</span>
+                            <span class="mr-2 btn btn-light waves-effect" @click="reset_command">清除</span>
+                        </div>
+                    </div>
+                    <!-- 字段展示列 -->
+                    <div class="col-4" style="max-height: 200px;">
+                        <p style="font-size: 110%;font-weight: bold;border-bottom: 1px solid;">字段</p>
+                        <div class="fields-container">
+                            <p v-for="field in columns" @click="append_command(' `'+field+'`,')">{{field}}</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- 顶部快捷按钮栏 -->
+                <div class="row" style="padding: 0 15px;">
+                    <button type="button" class="m-2 btn btn-light btn-rounded waves-effect" @click="view_structure">结构</button>
+                    <button type="button" class="m-2 btn btn-light btn-rounded waves-effect" @click="toggle_command_input">SQL</button>
+                    <button type="button" class="m-2 btn btn-light btn-rounded waves-effect" @click="insert_data">插入</button>
                 </div>
 
                 <!-- 用表格的形式展示数据 -->
@@ -347,15 +373,15 @@
                         <div class="card-box table-responsive">
                             <h4 class="m-t-0">{{database}}.{{table}}</h4>
 
-                            <table id="responsive-datatable" class="table table-bordered dt-responsive nowrap" cellspacing="0" width="100%">
+                            <table id="responsive-datatable" class="table table-bordered table-striped dt-responsive nowrap" cellspacing="0" width="100%">
                                 <thead>
                                 <tr>
-                                    <th v-for="column in columns">{{column}}</th>
+                                    <th v-for="column in data_description">{{column[0]}}</th>
                                 </tr>
                                 </thead>
 
                                 <tbody>
-                                <tr v-for="row in data">
+                                <tr v-for="row in data_detail">
                                     <td v-for="col in row">{{col}}</td>
                                 </tr>
                                 </tbody>
@@ -421,9 +447,6 @@
 <script src="/assets/js/jquery.app.js"></script>
 
 <script>
-    // $(document).ready(function () {
-    //     $('#responsive-datatable').DataTable();
-    // });
     axios.defaults.baseURL = 'http://127.0.0.1:8888/';
     vm = new Vue({
         el: "#wrapper",
@@ -432,22 +455,25 @@
             nick_name: 'Nobody',
             record_id: -1,
             columns: [],
+            column_description: [],
             column_detail: [],
-            data: [],
+            data_detail: [],
+            data_description: [],
             table: '',
             database: '',
             tables: []
         },
         created() {
             let url = window.location.href;
-            let params = url.split("?")[1].slice(2)
+            let params = url.split("?")[1].slice(2);
             params = JSON.parse(window.atob(params));
             this.record_id = params.record_id;
             this.database = params.database;
             // console.log(params);
             let that = this;
             // 获取当前所有数据库的tables；
-            this.execute_sql("show tables;", res => {
+            this.execute_sql("show tables;", re_data => {
+                let res = re_data['result'];
                 res.forEach(tb => that.tables.push(tb[0]));
                 // 设置第一个table为默认
                 if (that.tables) {
@@ -457,6 +483,11 @@
                     that.fetch_data();
                 }
             });
+        },
+        watch: {
+            data_detail(){
+                setTimeout(f => {$("#responsive-datatable").DataTable();}, 200);
+            }
         },
         methods: {
             showConfirm: function (record_id) {
@@ -474,8 +505,9 @@
                 axios.post('/OperateDB/',data, {
                         headers: {tsessionid: tsessionid}
                     }).then((res)=>{
-                        // console.log(res.data.result);
-                        if (callback) callback(res.data.result)
+                        // console.log("res.data: ");
+                        // console.log(res.data);
+                        if (callback) callback(res.data)
                     }).catch(function (err) {
                         console.log(err);
                         let err_msg = err.response.data['err_msg'];
@@ -483,39 +515,72 @@
                     })
             },
             run_command: function (obj) {
-                console.log(obj);
-                console.log(obj.$event);
                 if (!this.command) return;
-                this.execute_sql(this.command, result => {
-                    console.log("result");
-                    console.log(result);
+                let that = this;
+                that.execute_sql(this.command, re_data => {
+                    that.data_description = re_data['description'];
+                    that.data_detail = re_data['result'];
                 });
             },
-            fetch_columns: function (table) {
+            fetch_columns: function (callback) {
                 // 获取当前table的所有columns
                 let that = this;
-                that.columns = [];
-                if (table) {
-                    that.table = table;
+                if (callback) {
+                    that.execute_sql("show columns from " + that.table, callback)
+                } else {
+                    that.execute_sql("show columns from " + that.table, (re_data => {
+                        let res = re_data['result'];
+                        that.column_description = re_data['description'];
+                        that.column_detail = res;
+                        // that.columns = [];
+                        // that.column_description =re_data['']
+                        // res.forEach(col => { that.columns.push(col[0]) });
+                    }))
                 }
-                this.execute_sql("show columns from " + this.table, (res => {
-                    that.column_detail = res;
-                    res.forEach(col => { that.columns.push(col[0]) });
-                }))
             },
             fetch_data: function (table) {
                 // 获取当前database.table的所有数据
                 let that = this;
                 if (table){
                     that.table = table;
-                    that.fetch_columns();
                 }
                 // let command = "select * from " + that.database+'.'+that.table;
                 let command = "select * from " + that.table;
-                that.execute_sql(command, res => {
-                    that.data = res;
+                that.execute_sql(command, re_data => {
+                    that.data_description = re_data['description'];
+                    that.data_detail = re_data['result'];
+                    that.columns = [];
+                    that.data_description.forEach(col => { that.columns.push(col[0]) });
                     // $('#responsive-datatable').DataTable();
                 })
+            },
+            view_structure: function () {
+                let elem = $("#command-input")[0];
+                if (!elem.hidden) elem.hidden = true;
+                let that = this;
+                that.fetch_columns(re_data => {
+                    that.data_description = re_data['description'];
+                    that.data_detail = re_data['result'];
+                })
+            },
+            toggle_command_input: function () {
+                let elem = $("#command-input")[0];
+                // elem.hidden = !elem.hidden;
+                // console.log(elem);
+                elem.hidden = !elem.hidden;
+            },
+            append_command: function (command) {
+                this.command += command;
+            },
+            reset_command: function () {
+                this.command = "";
+            },
+            insert_data: function () {
+                let key_params = {db: this.database, record_id: this.record_id, tbl: this.table};
+                localStorage.setItem('key_params', window.btoa(JSON.stringify(key_params)));
+                localStorage.setItem('column_description', JSON.stringify(this.column_description));
+                localStorage.setItem('column_detail', JSON.stringify(this.column_detail));
+                window.open('/html/insert_data.html');
             }
         }
     });

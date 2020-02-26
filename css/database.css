@@ -1,0 +1,12 @@
+div.fields-container {
+    overflow-y: scroll;
+    max-height: 150px;
+}
+
+div.fields-container > p{
+    margin-bottom: 10px;
+}
+
+.hide-bar::-webkit-scrollbar {
+    display: none;
+}

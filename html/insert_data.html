@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+
+    <!-- Custom box css -->
+    <link href="../plugins/custombox/css/custombox.min.css" rel="stylesheet">
+
+    <!-- App css -->
+    <link href="/assets/css/bootstrap.min.css" rel="stylesheet" type="text/css" />
+    <link href="/assets/css/icons.css" rel="stylesheet" type="text/css" />
+    <link href="/assets/css/metismenu.min.css" rel="stylesheet" type="text/css" />
+    <link href="/assets/css/style.css" rel="stylesheet" type="text/css" />
+
+    <script src="/assets/js/modernizr.min.js"></script>
+
+    <!-- Bootstrap 4 files-->
+    <link rel="stylesheet" href="/assets/css/bootstrap.min.css">
+    <script src="/assets/js/jquery.min.js"></script>
+    <script src="/assets/js/popper.min.js"></script>
+    <script src="/assets/js/bootstrap.min.js"></script>
+    <!-- js -->
+    <script type="text/javascript" src="../js/vue.js"></script>
+    <script type="text/javascript" src="../js/vue-cookies.js"></script>
+    <script type="text/javascript" src="../js/axios.js"></script>
+
+</head>
+<body>
+<div id="container">
+    <table class="table table-striped" cellspacing="0" width="100%">
+        <thead>
+            <tr><th v-for="column in column_description">{{column}}</th> <th>Value</th></tr>
+        </thead>
+
+        <tbody>
+            <tr v-for="(row, idx) in column_detail">
+            <!--  ["id","int(11)","NO","PRI",null,"auto_increment"]-->
+                <td v-for="col in row">{{col}}</td>
+                <td><input type="text" class="form-control" v-model="fields[row[0]]" ></td>
+            </tr>
+        </tbody>
+    </table>
+    <a href="#custom-modal" data-animation="door" data-plugin="custommodal" data-overlayspeed="100" data-overlaycolor="#36404a">
+        <button type="button" class="btn btn-block btn-xs btn-success waves-effect waves-light" @click="generate_sql">插入数据</button>
+    </a>
+    <!-- Modal -->
+    <div id="custom-modal" class="modal-demo">
+        <button type="button" id="toggle-modal-close" class="close" onclick="Custombox.close();">
+            <span>&times;</span><span class="sr-only">Close</span>
+        </button>
+
+        <h4 class="custom-modal-title" v-if="insertDone">执行结果</h4>
+        <div class="custom-modal-text" v-if="insertDone">
+            <div class="form-group m-b-25">
+                <div class="col-12">
+                    <span>{{insertResult}}</span>
+                </div>
+            </div>
+        </div>
+
+        <h4 class="custom-modal-title" v-if="askExecute">执行以下语句</h4>
+        <div class="custom-modal-text" v-if="askExecute">
+            <form class="form-horizontal">
+
+                <div class="form-group m-b-25">
+                    <div class="col-12">
+                        <label for="emailaddress3">SQL</label>
+                        <textarea class="form-control" type="email" id="emailaddress3" required="" v-model="sql"></textarea>
+                    </div>
+                </div>
+
+                <div class="form-group account-btn text-center m-t-10">
+                    <div class="col-12">
+                        <button class="btn w-lg btn-rounded btn-custom waves-effect waves-light" @click="execute_insert">执行</button>
+                    </div>
+                </div>
+
+            </form>
+        </div>
+    </div>
+</div>
+
+
+<a href="#custom-modal" hidden id="toggle-modal" data-animation="door" data-plugin="custommodal" data-overlayspeed="100" data-overlaycolor="#36404a"></a>
+
+<!--</div>-->
+
+
+<!-- jQuery  -->
+<script src="/assets/js/jquery.min.js"></script>
+<script src="/assets/js/popper.min.js"></script>
+<script src="/assets/js/bootstrap.min.js"></script>
+<script src="/assets/js/metisMenu.min.js"></script>
+<script src="/assets/js/waves.js"></script>
+<script src="/assets/js/jquery.slimscroll.js"></script>
+
+<!-- App js -->
+<script src="/assets/js/jquery.core.js"></script>
+<script src="/assets/js/jquery.app.js"></script>
+<!-- Modal-Effect -->
+<script src="/plugins/custombox/js/custombox.min.js"></script>
+<script src="/plugins/custombox/js/legacy.min.js"></script>
+
+<script>
+    const vm = new Vue({
+        el: '#container',
+        data: {
+            db: '',
+            sql: '',
+            insertResult: '',
+            insertDone: false,
+            askExecute: true,
+            record_id: -1,
+            fields: {},
+            column_description: [],
+            column_detail: []
+        },
+        created: function(){
+            let max_columns = 3;
+            let that = this;
+            let key_params = JSON.parse(window.atob(localStorage.getItem('key_params')));
+            that.db = key_params.db;
+            that.record_id = key_params.record_id;
+            that.table = key_params.tbl;
+            let column_description = JSON.parse(localStorage.getItem('column_description'));
+            let column_detail = JSON.parse(localStorage.getItem('column_detail'));
+            for (let i = 0; i < max_columns; i++) that.column_description.push(column_description[i][0]);
+            column_detail.forEach(item => {
+                that.fields[item[0]] = '';
+                that.column_detail.push(item.splice(0, max_columns));
+            });
+            document.getElementsByTagName('title')[0].innerText = "插入"+this.db+'.'+this.table;
+        },
+        methods: {
+            generate_sql: function () {
+                // INSERT INTO `test` (`id`, `name`, `phone`, `age`, `gender`) VALUES (NULL, 'Oday', '13725761132', '13', 'male');
+                let keys = [];
+                let values = [];
+                let fields = this.fields;
+                for (let key in fields){
+                    if (fields.hasOwnProperty(key)){
+                        keys.push("`"+key + "`");
+                        values.push(fields[key] ? "\'"+fields[key]+"\'" : 'NULL');
+                    }
+                }
+                let sql = "INSERT INTO `" + this.table + "` (" + keys.join(',') + ") VALUES (" + values.join(',') + ");";
+                this.sql = sql;
+                this.insertDone = false;
+                this.askExecute = true;
+                document.getElementById('toggle-modal').click();
+            },
+            execute_insert: function () {
+                let tsessionid = this.$cookies.get('tsessionid');
+                let data = {
+                    record_id: this.record_id,
+                    command: this.sql,
+                };
+                let that = this;
+                axios.post('/OperateDB/',data, {
+                    headers: {tsessionid: tsessionid}
+                }).then((res)=>{
+                    console.log(res);
+                    that.askExecute = false;
+                    that.insertDone = true;
+                    that.insertResult = "插入成功";
+                }).catch(function (err) {
+                    console.log(err);
+                    that.askExecute = false;
+                    that.insertDone = true;
+                    that.insertResult = err.response.data['err_msg'];
+                    // if (err_msg) alert(err_msg);
+                })
+            }
+        }
+    });
+</script>
+
+</body>
+</html>

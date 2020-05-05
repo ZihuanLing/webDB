@@ -27,7 +27,8 @@
 
 </head>
 <body>
-<div id="container">
+<div id="container" class="container mt-5">
+    <h2 class="mb-3">插入数据到{{table}}表</h2>
     <table class="table table-striped" cellspacing="0" width="100%">
         <thead>
             <tr><th v-for="column in column_description">{{column}}</th> <th>Value</th></tr>
@@ -50,8 +51,8 @@
             <span>&times;</span><span class="sr-only">Close</span>
         </button>
 
-        <h4 class="custom-modal-title" v-if="insertDone">执行结果</h4>
-        <div class="custom-modal-text" v-if="insertDone">
+        <h4 class="custom-modal-title" v-show="insertDone">执行结果</h4>
+        <div class="custom-modal-text" v-show="insertDone">
             <div class="form-group m-b-25">
                 <div class="col-12">
                     <span>{{insertResult}}</span>
@@ -59,8 +60,8 @@
             </div>
         </div>
 
-        <h4 class="custom-modal-title" v-if="askExecute">执行以下语句</h4>
-        <div class="custom-modal-text" v-if="askExecute">
+        <h4 class="custom-modal-title" v-show="askExecute">执行以下语句</h4>
+        <div class="custom-modal-text" v-show="askExecute">
             <form class="form-horizontal">
 
                 <div class="form-group m-b-25">
@@ -72,7 +73,7 @@
 
                 <div class="form-group account-btn text-center m-t-10">
                     <div class="col-12">
-                        <button class="btn w-lg btn-rounded btn-custom waves-effect waves-light" @click="execute_insert">执行</button>
+                        <button class="btn w-lg btn-rounded btn-custom waves-effect waves-light" @click.stop.prevent="execute_insert" >执行</button>
                     </div>
                 </div>
 
@@ -124,6 +125,7 @@
             that.record_id = key_params.record_id;
             that.table = key_params.tbl;
             let column_description = JSON.parse(localStorage.getItem('column_description'));
+            let data_description = JSON.parse(localStorage.getItem('data_description'));
             let column_detail = JSON.parse(localStorage.getItem('column_detail'));
             for (let i = 0; i < max_columns; i++) that.column_description.push(column_description[i][0]);
             column_detail.forEach(item => {

@@ -88,7 +88,15 @@ def modify_password():
         print(resp.text)
 
 
+def con_test():
+    resp = requests.get(f"{website_url}")
+    # resp = requests.get(f"http://127.0.0.1:8787/")
+    # resp = requests.get(f"http://193.112.244.182:8787/")
+    print(resp.content)
+
+
 if __name__ == '__main__':
+    con_test()
     pass
     # redis_conn = redis.StrictRedis(**settings['redis'])
     # r = redis_conn.set("13725761132_5091", 1, 600)

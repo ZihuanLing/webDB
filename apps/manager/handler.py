@@ -1,9 +1,7 @@
 import json
 
-from peewee_async import MySQLDatabase
-import peewee
 import aiomysql
-from pymysql.err import OperationalError, ProgrammingError
+from pymysql.err import OperationalError, ProgrammingError, InternalError
 
 from apps.utils.util_func import json_serial2
 from apps.utils.crypto import encrypt, decrypt
@@ -147,6 +145,7 @@ class DBOperateHandler(RedisHandler):
             async with conn.cursor() as cur:
                 await cur.execute(command)
                 r = await cur.fetchall()
+                await conn.commit()
                 re_data['description'] = cur.description
                 re_data['result'] = r
         except ProgrammingError as e:
@@ -160,6 +159,11 @@ class DBOperateHandler(RedisHandler):
             cause = e.__cause__.args
             re_data['err_code'] = cause[0]
             re_data['err_msg'] = cause[1]
+        except InternalError as e:
+            # 一般为Mysql语句错误
+            self.set_status(403)
+            re_data['err_code'] = e.args[0]
+            re_data['err_msg'] = e.args[1]
         conn.close()
 
         self.finish(json.dumps(re_data, default=json_serial2))

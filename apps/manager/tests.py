@@ -1,5 +1,6 @@
 import requests
 import json
+from random import choice, sample, randint
 import redis
 from datetime import datetime
 from webDB.settings import settings
@@ -83,25 +84,43 @@ def operate_db(record_id):
         print(resp.text)
 
 
-async def sql_test():
+names = ["Steve", "Paula", "Jerome", "Mara", "Rihanna", "Harris", "Julien", "Marlene", "Thalia", "Chanel", "Nikita", "Celia", "Fraser", "Pearl", "Pamela", "Marquis", "Ciaran", "Gillian", "Terrence", "Gina", "Rhianna", "Eileen", "Todd", "Lilia", "Louisa", "Charity", "Keenan", "Corinne", "Alessandro", "Theresa"]
+classNames = ['C++', 'Java', 'PHP', 'Python', 'Nodejs', 'MySQL', 'MongoDB', 'JavaScript', 'Html5', 'Css3', 'Nginx']
+teachers = ['Alex', 'Neil', 'Wallen', 'Willen', 'Jordan', 'Papi', 'Eureka', 'Dako', 'Shine']
+def gen_phone():
+    prefixs = ["133","149","153","173","177","180","181","189","199","130","131","132","145","155","156","166","171","175","176","185","186","166"]
+    prefix = choice(prefixs)
+    s = '12345678'
+    phone = prefix + ''.join(sample(s, 8))
+    return phone
+
+
+def gen_SQL():
+    name = choice(classNames)
+    score = randint(50, 100)
+    teacher = choice(teachers)
+    user_id = randint(1, 100)
+    address = choice(['Guangdong', 'Beijing', 'Shanghai', 'Zhejiang', 'Nanjing'])
+    return f"INSERT INTO test_db.tbl_score (class_name, score, teacher, user_id) VALUES ('{name}', '{score}', '{teacher}', '{user_id}');"
+
+
+async def sql_test2():
     import aiomysql
     config = {
         'host': '127.0.0.1',
         'user': 'root',
         'password': 'root',
-        'db': 'web_db',
+        'db': 'testdb',
         'port': 3306
     }
     # conn = await aiomysql.connect(**config)
     try:
         conn = await aiomysql.connect(**config)
         async with conn.cursor() as cur:
-            await cur.execute("show databases;")
-            print(cur.description)
-            r = await cur.fetchall()
-            # r: tuple
-            print(r)
-        # sleep(15)
+            SQL = "INSERT INTO `test` (`id`, `name`, `phone`, `age`, `gender`) VALUES (NULL, 'Lingzihuan', '13725761132', '13', 'male')"
+            await cur.execute(SQL)
+            await conn.commit()
+
         conn.close()
     except ProgrammingError as e:
         print("ProgrammingError")
@@ -110,6 +129,38 @@ async def sql_test():
         print("OperationalError")
         cause = e.__cause__.args
         print("Error reason: ", cause[1])
+
+
+
+async def sql_test():
+    import aiomysql
+    config = {
+        'host': '127.0.0.1',
+        'user': 'root',
+        'password': 'root',
+        'db': 'test_db',
+        'port': 3306
+    }
+    # conn = await aiomysql.connect(**config)
+    for i in range(100):
+        try:
+            conn = await aiomysql.connect(**config)
+            async with conn.cursor() as cur:
+                # SQL = "INSERT INTO mxforum.test (name, phone, age, gender) VALUES ('xiaolan', '13812523651', '32', 'male');"
+                SQL = gen_SQL()
+                await cur.execute(SQL)
+                await conn.commit()
+            # sleep(15)
+            conn.close()
+        except ProgrammingError as e:
+            print("ProgrammingError")
+            print(e.args[1])
+        except OperationalError as e:
+            print("OperationalError")
+            cause = e.__cause__.args
+            print("Error reason: ", cause[1])
+        finally:
+            print(f'{i} - DONE')
 
 
 async def main():
@@ -137,14 +188,6 @@ async def main():
         r = await cur.fetchall()
         print(r)
     conn.close()
-
-    # cur = await conn.cursor()
-    # await cur.execute("SHOW TABLES")
-    # print(cur.description)
-    # r = await cur.fetchall()
-    # print(r)
-    # await cur.close()
-    # conn.close()
 
 
 def encrypt_test():
@@ -201,4 +244,5 @@ if __name__ == '__main__':
     # get_db_record()
     # del_record(2)
     # connect_db(1)
+    pass
 

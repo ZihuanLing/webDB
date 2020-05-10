@@ -12,7 +12,6 @@ DB_TYPE = (
     ('MYSQL', 'MYSQL')
 )
 
-
 class UserDB(BaseModel):
     # 用户的数据库记录
     owner = ForeignKeyField(User, verbose_name='拥有者')           # 该数据库属于哪个用户

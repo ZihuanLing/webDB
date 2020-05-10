@@ -1,5 +1,4 @@
 from abc import ABC
-from time import time
 from datetime import datetime
 
 from tornado.web import RequestHandler, StaticFileHandler

@@ -1,3 +1,4 @@
 .idea
 __pycache__
 smtp_config.json
+.DS_Store

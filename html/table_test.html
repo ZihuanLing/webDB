@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>This is table test</title>
+
+    <link href="/assets/css/bootstrap.min.css" rel="stylesheet" type="text/css"/>
+
+    <script type="text/javascript" src="../js/vue.js"></script>
+    <script type="text/javascript" src="../js/vue-cookies.js"></script>
+    <script type="text/javascript" src="../js/axios.js"></script>
+    <script type="text/javascript" src="../js/vTable.js"></script>
+    <style>
+        [v-cloak] {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div id="app" v-cloak>
+        <div class="table-list">
+            <p v-for="tb in tables" @click="fetch_data(tb)">{{tb}}</p>
+        </div>
+
+        <div>
+            每页展示
+            <select style="width:200px" v-model=selectId @change="splitPage">
+                <Option v-for="val,idx in pages" :value=idx :key="idx">{{val}}</Option>
+            </select>
+            条数据
+        </div>
+        <v-table :data="data" :columns="columns" :page="page" :pageid="pageIdx-1" class="table table-bordered table-striped"></v-table>
+        <div class="row">
+            <div class="col-sm-12 col-md-5"></div>
+            <div class="row col-sm-12 col-md-7">
+                <button type="button" class="btn btn-outline-dark waves-light waves-effect mr-4"  @click="pageChange(-1)">上一页</button>
+                <div style="margin-right: -10%;"><input type="number" v-model="pageIdx" class="col-md-4" @change="pageChange(0)">&nbsp;/&nbsp;<span>{{totalPages}}</span></div>
+                <button type="button" class="btn btn-outline-dark waves-light waves-effect"  @click="pageChange(1)">下一页</button>
+            </div>
+        </div>
+<!--        <button @click="add">新增</button>-->
+    </div>
+
+    <script>
+        axios.defaults.baseURL = 'http://127.0.0.1:8888/';
+        let app = new Vue({
+            el: '#app',
+            data: {
+                //title 、key 与 width 必填；sortable 选填
+                columns: [],
+                data: [],
+                record_id: 10,
+                tables: [],
+                pages:[5, 10, 20, 50],
+                selectId: 1,
+                page: 10,       // 每一页显示数量
+                pageIdx:1,      // 当前页面
+                totalPages: 0
+            },
+            created() {
+                // return;
+                this.record_id = 10;
+                this.database = "test_db";
+                let that = this;
+                // 获取当前所有数据库的tables；
+                this.execute_sql("show tables;", re_data => {
+                    let res = re_data['result'];
+                    res.forEach(tb => that.tables.push(tb[0]));
+                    // 设置第一个table为默认
+                    if (that.tables) {
+                        that.table = that.tables[0];
+                        // that.table = 'db';
+                        that.fetch_columns();
+                        that.fetch_data();
+                    }
+                });
+            },
+            methods: {
+                pageChange: function(val){
+                    this.pageIdx += val;
+                    if (this.pageIdx <= 0) this.pageIdx = 1;
+                    if (this.pageIdx >= this.totalPages) this.pageIdx = this.totalPages;
+                    // console.log(this.pageIdx);
+                },
+                splitPage: function(){
+                    this.page = this.pages[this.selectId];
+                    this.totalPages = Math.ceil(this.data.length / this.page);
+                    if(this.pageIdx > this.totalPages) this.pageIdx = this.totalPages;
+                },
+                format_columns: function(cols, datas){
+                    let columns = [];
+                    let data = [];
+                    let that = this;
+
+                    cols.forEach(item => {columns.push({title: item[0], key: item[0], sortable: true})});
+                    datas.forEach(item => {
+                        let tmp = {};
+                        for(let i in cols) tmp[cols[i][0]] = item[i];
+                        data.push(tmp)
+                    });
+                    that.columns = columns;
+                    that.data = data;
+                    that.totalPages = Math.ceil(that.data.length / that.page);
+                },
+                execute_sql: function (sql, callback){
+                    let tsessionid = this.$cookies.get('tsessionid');
+                    let data = {
+                        record_id: this.record_id,
+                        command: sql,
+                    };
+                    axios.post('/OperateDB/',data, {
+                            headers: {tsessionid: tsessionid}
+                        }).then((res)=>{
+                            if (callback) callback(res.data)
+                        }).catch(function (err) {
+                            console.log(err);
+                            let err_msg = err.response.data['err_msg'];
+                            if (err_msg) alert(err_msg);
+                        })
+                },
+                fetch_columns: function (callback) {
+                    // 获取当前table的所有columns
+                    let that = this;
+                    if (callback) {
+                        that.execute_sql("show columns from " + that.table, callback)
+                    } else {
+                        that.execute_sql("show columns from " + that.table, (re_data => {
+                            that.column_description = re_data['description'];
+                            that.column_detail = re_data['result'];
+                        }))
+                    }
+                },
+                fetch_data: function (table) {
+                    // 获取当前database.table的所有数据
+                    let that = this;
+                    if (table){
+                        that.table = table;
+                    }
+                    // let command = "select * from " + that.database+'.'+that.table;
+                    let command = "select * from " + that.table;
+                    that.execute_sql(command, re_data => {
+                        that.format_columns(re_data['description'], re_data['result'])
+                    });
+                    that.fetch_columns();
+                },
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,9 @@
+{
+  "from_addr" : "neil.ling@foxmail.com",
+  "password" : "pqbqvchqwtzcgbdh",
+  "smtp_config" : {
+    "hostname": "smtp.qq.com",
+    "port": 465,
+    "use_tls": 1
+  }
+}

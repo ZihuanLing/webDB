@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>注册</title>
+    <title>注册新用户</title>
    <meta name="viewport" charset="UTF-8" content="user-scalable=no"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0">
     <meta property="qc:admins" content="1403267155765154541656375" />
@@ -11,12 +11,27 @@
     <meta http-equiv="Access-Control-Allow-Origin" content="*">
 </head>
 <body>
+<style>
+    .content {
+        background: #fff;
+    }
+    .wrap {
+        margin-top: 0;
+    }
+    .post-service {
+        position: fixed;
+        bottom: 0;
+    }
+    a:link, a:visited, a:hover, a:active {
+        color: #0366D6;
+    }
+</style>
 
 <div class="header">
     <div class="loginhead">
         <div class="wrap">
-                        <div class="fr" style="float: right;margin-top: 10px;font-size: 14px;color: #fff;">已有账号？<a href="login.html" style="color: #fff;margin-left: 15px;padding-left: 15px;border-left: solid 1px #a0a0a0;">登录</a></div>
             <div class="logo"><a href="./html/group/group.html" title="logo"><img style="margin: 4px 0px;" src="./images/logo.png" width="150" height="52"/></a></div>
+            <div class="fr" style="margin-top: 25px;font-size: 14px;color:#fff;">已有账号？<a href="login.html" style="color: #fff;margin-left: 15px;padding-left: 15px;border-left: solid 1px #a0a0a0;">登录</a></div>
         </div>
     </div>
 </div>
@@ -36,7 +51,7 @@
                             <dt><span>*</span>邮箱:</dt>
                             <dd>
                                 <input class="inp" type="email" v-model="email" id="premail" @blur="changeMobile" placeholder="请输入邮箱" />
-                                <span class="marphone" v-if="errEmail != ''">{{errEmail}}</span>                       
+                                <span class="marphone" v-if="errEmail != ''">{{errEmail}}</span>
                             </dd>
                                 <span class="marcode" v-if="dataEmail">{{dataEmail}}</span></dd>
                         </dl>
@@ -88,7 +103,7 @@
                 width: 700px;
             }
         </style>
- 
+
     </div>
 </div>
 <!--itembox end-->

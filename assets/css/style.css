@@ -150,6 +150,13 @@ File: Main Css File
 
 .user-box {
   padding: 90px 25px 25px 25px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.card-title {
+  font-size: 20px;
 }
 
 .user-box .user-img {
